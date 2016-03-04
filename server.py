@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys,time,mimetypes,cgi
+import sys,time,mimetypes,cgi,base64
 from os import sep, curdir
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from algo import Manhattan_ocr
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self,doctype):
@@ -35,9 +36,23 @@ class S(BaseHTTPRequestHandler):
                     }
                 )
         print "Image received."
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write('Image:\n%s' % form['image'].value)
+        imgstr64 = form['image'].value.split(',')[-1]
+        # self.send_response(200)
+        # self.end_headers()
+        self._set_headers('text/html')
+        self.wfile.write('Image Received.<br>Running OCR...<br>')
+        with open('raw.png','wb') as f:
+            f.write(base64.decodestring(imgstr64))
+        try:
+            self.wfile.write('''
+                <br>Your VIN no:
+                <br><textarea row="1" col="18">%s</textarea>
+                <br><button class="btn btn-lg btn-default" id="go-back">Done</button>
+                ''' % Manhattan_ocr.extract(imgstr64))
+        except TypeError as e:
+            self.wfile.write(e)
+            raise
+
         
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)

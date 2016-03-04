@@ -1,5 +1,3 @@
-//Author: Konrad Dzwinel https://github.com/kdzwinel
-
 (function () {
     var video = document.querySelector('video');
 
@@ -148,61 +146,67 @@
         fxCanvas.draw(texture)
             .hueSaturation(-1, -1)//grayscale
             .unsharpMask(20, 2)
-            .brightnessContrast(0.2, 0.9)
+            .brightnessContrast(0.25, 0.65)
             .update();
 
         window.texture = texture;
         window.fxCanvas = fxCanvas;
 
-        $(img)
+        $(img).attr('src', fxCanvas.toDataURL());
             //setup the crop utility
-            .one('load', function () {
-                if (!$(img).data().Jcrop) {
-                    $(img).Jcrop({
-                        onSelect: function () {
-                            //Enable the 'done' button
-                            $('#adjust').removeAttr('disabled');
-                        }
-                    });
-                } else {
-                    //update crop tool (it creates copies of <img> that we have to update manually)
-                    $('.jcrop-holder img').attr('src', fxCanvas.toDataURL());
-                }
-            })
-            //show output from glfx.js
-            .attr('src', fxCanvas.toDataURL());
+            //.one('load', function () {
+            //    if (!$(img).data().Jcrop) {
+            //        $(img).Jcrop({
+            //            onSelect: function () {
+            //                //Enable the 'done' button
+            //                $('#adjust').removeAttr('disabled');
+            //            }
+            //        });
+            //    } else {
+            //        //update crop tool (it creates copies of <img> that we have to update manually)
+            //        $('.jcrop-holder img').attr('src', fxCanvas.toDataURL());
+            //    }
+            //})
+            ////show output from glfx.js
+            //.attr('src', fxCanvas.toDataURL());
     }
 
     function step3() {
         var canvas = document.querySelector('#step3 canvas');
         var step2Image = document.querySelector('#step2 img');
-        var cropData = $(step2Image).data().Jcrop.tellSelect();
+        //var cropData = $(step2Image).data().Jcrop.tellSelect();
 
-        var scale = step2Image.width / $(step2Image).width();
+        //var scale = step2Image.width / $(step2Image).width();
 
         //draw cropped image on the canvas
-        canvas.width = cropData.w * scale;
-        canvas.height = cropData.h * scale;
+        //canvas.width = cropData.w * scale;
+        //canvas.height = cropData.h * scale;
+
+        canvas.width = pictureWidth;
+        canvas.height = pictureHeight;
 
         var ctx = canvas.getContext('2d');
-        ctx.drawImage(
-            step2Image,
-            cropData.x * scale,
-            cropData.y * scale,
-            cropData.w * scale,
-            cropData.h * scale,
-            0,
-            0,
-            cropData.w * scale,
-            cropData.h * scale);
+        //ctx.drawImage(
+        //    step2Image,
+        //    cropData.x * scale,
+        //    cropData.y * scale,
+        //    cropData.w * scale,
+        //    cropData.h * scale,
+        //    0,
+        //    0,
+        //    cropData.w * scale,
+        //    cropData.h * scale);
+        ctx.drawImage(step2Image,0,0);
 
         //use ocrad.js to extract text from the canvas
-        var resultText = OCRAD(ctx);
-        resultText = resultText.trim();
+        //var resultText = OCRAD(ctx);
+        //resultText = resultText.trim();
 
         //show the result
-        $('blockquote p').html('&bdquo;' + resultText + '&ldquo;');
-        $('blockquote footer').text('(' + resultText.length + ' characters)')
+        //$('blockquote p').html('&bdquo;' + resultText + '&ldquo;');
+        //$('blockquote footer').text('(' + resultText.length + ' characters)')
+        $('blockquote p').html('Please make sure that the license is fully contained in the screen.');
+        $('blockquote footer').text('Peons from Manhattan');
     }
 
     /*********************************
@@ -248,7 +252,6 @@
     });
 
     $('#takePicture').click(function () {
-        $('#debug').val('haha');
         step2();
         changeStep(2);
     });
@@ -258,17 +261,12 @@
         changeStep(3);
     });
 
-    $('#go-back').click(function () {
-        changeStep(2);
-    });
-
     $('#start-over').click(function () {
         changeStep(1);
     });
 
-    $('#btn-submit').click(function () {
+    $('#submit-btn').click(function () {
         var canvas = document.querySelector('#step3 canvas');
-        //$('#debug').val('good');
         $('#submit-image').val(canvas.toDataURL('image/png'));
         $('#submit-form').submit();
     });
