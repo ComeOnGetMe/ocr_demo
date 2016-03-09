@@ -146,7 +146,7 @@
         fxCanvas.draw(texture)
             .hueSaturation(-1, -1)//grayscale
             .unsharpMask(20, 2)
-            .brightnessContrast(0.25, 0.65)
+            .brightnessContrast(0.25, 0)
             .update();
 
         window.texture = texture;
@@ -205,8 +205,17 @@
         //show the result
         //$('blockquote p').html('&bdquo;' + resultText + '&ldquo;');
         //$('blockquote footer').text('(' + resultText.length + ' characters)')
-        $('blockquote p').html('Please make sure that the license is fully contained in the screen.');
-        $('blockquote footer').text('Peons from Manhattan');
+        //$('blockquote p').html('Please make sure that the license is fully and clearly captured in the screen.');
+        //$('blockquote footer').text('Peons from Manhattan');
+    }
+
+    function step4() {
+        var canvas = document.querySelector('#step4 canvas');
+        var step2Image = document.querySelector('#step2 img');
+        canvas.width = pictureWidth;
+        canvas.height = pictureHeight;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(step2Image,0,0);
     }
 
     /*********************************
@@ -253,7 +262,8 @@
 
     $('#takePicture').click(function () {
         step2();
-        changeStep(2);
+        step3();
+        changeStep(3);
     });
 
     $('#adjust').click(function () {
@@ -266,6 +276,8 @@
     });
 
     $('#submit-btn').click(function () {
+        step4();
+        changeStep(4);
         var canvas = document.querySelector('#step3 canvas');
         $('#submit-image').val(canvas.toDataURL('image/png'));
         $('#submit-form').submit();

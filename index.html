@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Vehicle OCR demo</title>
+    <title>Vehicle license OCR demo</title>
 
-    <meta name="Description" content="Optical Character Recognition demo in JavaScript"/>
+    <meta name="Description" content="Optical Character Recognition demo"/>
     <meta property="og:image" content="img/process.png"/>
     <link rel="image_src" href="img/process.png"/>
 
@@ -25,7 +25,7 @@
             <h1><i class="glyphicon glyphicon-camera"></i></h1>
 
             <p class="lead">
-                Take a good picture of a huge, printed text.
+                Take a good picture of your license.
                 <i class="glyphicon glyphicon-question-sign help" data-placement="bottom"
                    data-content="<img src='img/step1.png' />" data-html="true"></i>
             </p>
@@ -52,22 +52,22 @@
 
             <p>Brightness: <input type="range" min="0" max="100" id="brightness" value="25"></p>
 
-            <p>Contrast: <input type="range" min="0" max="100" id="contrast" value="65"></p>
+            <p>Contrast: <input type="range" min="0" max="100" id="contrast" value="0"></p>
 
             <button class="btn btn-lg btn-success" id="adjust">Proceed</button>
         </div>
         <div id="step3">
             <h1><i class="glyphicon glyphicon-text-height"></i></h1>
 
-            <p class="lead">You'll find the recognized text below.</p>
+            <p class="lead">Press 'Submit' and see the scanned information.</p>
 
             <figure>
                 <canvas></canvas>
             </figure>
 
             <blockquote>
-                <p id="result"></p>
-                <footer></footer>
+                <p id="result">Please make sure that the license is fully and clearly captured in the screen.</p>
+                <footer>Peons from Manhattan</footer>
             </blockquote>
 
             <button class="btn btn-lg btn-default" id="start-over">Start over</button>
@@ -78,6 +78,22 @@
                     <input type="text" id="submit-image" name="image" value="">
                 </form>
             </div>
+        </div>
+        <div id="step4">
+            <h1><i class="glyphicon glyphicon-time"></i></h1>
+
+            <p class="lead">Press wait for a few seconds.</p>
+
+            <figure>
+                <canvas></canvas>
+            </figure>
+
+            <div class="progress progress-striped active">
+                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
+                    <span class="sr-only">100%</span>
+                </div>
+            </div>
+
         </div>
     </div>
 

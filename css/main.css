@@ -56,6 +56,11 @@ body {
     padding-bottom: 10px;
 }
 
+.jumbotron input {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
 .jumbotron blockquote {
     border-left: 5px solid gray;
     text-align: left;
@@ -88,23 +93,32 @@ body {
     }
 }
 
-body.step1 #step2, body.step1 #step3 {
+body.step1 #step4, body.step1 #step3, body.step1 #step2 {
     display: none;
 }
 
-body.step2 #step1, body.step2 #step3 {
+body.step2 #step1, body.step2 #step3, body.step2 #step4{
+    display: none;
+}
+
+body.step4 #step1, body.step4 #step3, body.step4 #step2{
      display: none;
 }
 
-body.step3 #step1, body.step3 #step2 {
+body.step3 #step1, body.step3 #step4, body.step3 #step2{
     display: none;
+}
+
+body.result .input-group {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .alert {
     display: none;
 }
 
-.jumbotron #step1 video, .jumbotron #step2 figure > img, .jumbotron #step3 figure > canvas {
+.jumbotron #step1 video, .jumbotron #step2 figure > img, .jumbotron #step3 figure > canvas, .jumbotron #step4 figure > canvas {
     max-width: 100%;
 }
 

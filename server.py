@@ -39,21 +39,30 @@ class S(BaseHTTPRequestHandler):
         imgstr64 = form['image'].value.split(',')[-1]
         # self.send_response(200)
         # self.end_headers()
-        self._set_headers('text/html')
-        self.wfile.write('Image Received.<br>Running OCR...<br>')
-        with open('raw.png','wb') as f:
-            f.write(base64.decodestring(imgstr64))
+        # self._set_headers('text/html')
+        # self.wfile.write('Image Received.<br>Running OCR...<br>')
+        # with open('raw.png','wb') as f:
+        #     f.write(base64.decodestring(imgstr64))
         try:
-            self.wfile.write('''
-                <br>Your VIN no:
-                <br><textarea row="1" col="18">%s</textarea>
-                <br><button class="btn btn-lg btn-default" id="go-back">Done</button>
-                ''' % Manhattan_ocr.extract(imgstr64))
+            result = Manhattan_ocr.extract(imgstr64)
+            self._set_headers('text/html')
+            # self.wfile.write('Image Received. <bt> Running OCR...<br>')
+            # self.wfile.write('''
+            #     <br>Your VIN no:
+            #     <br><textarea row="1" col="18">%s</textarea>
+            #     <br><button class="btn btn-lg btn-default" formaction="result.html" method="get" id="go-back">Done</button>
+            #     ''' % result)
+            with open(curdir + sep + '/result.html') as f:
+                result_html = f.read()
+
+            # print [key for key in result] + [result[key] for key in result]
+            self.wfile.write(result_html.format(*([key for key in result] + [result[key] for key in result])))
+            # self.wfile.write(result_html)
         except TypeError as e:
             self.wfile.write(e)
             raise
-
         
+
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)

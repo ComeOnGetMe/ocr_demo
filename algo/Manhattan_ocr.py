@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import cv2,os,io,json,base64
+import cv2,io,base64
 import numpy as np
-from pkg_resources import resource_filename
 from pytesseract import image_to_string
 from PIL import Image
 
@@ -24,7 +23,14 @@ def good_matches(matches):
             good.append(m)
     return good
 
-def orientation(imagebytes):
+def trim(str, length):
+    for i in xrange(len(str)):
+        if str[i] != ' ' and (i +length) < len(str) and ' ' not in str[i:i + length]:
+                return str[i:i + length]
+    else:
+        return ''
+
+def orientation(imagebytes, log = True):
     sift = cv2.SIFT()
     (kp2, des2) = train(sift)
     index_params = dict(algorithm=0, trees=5)
@@ -51,7 +57,8 @@ def orientation(imagebytes):
   
         warp = cv2.warpPerspective(ts_img, M, (639, 439))
         dst = cv2.bilateralFilter(warp,5, 50, 50)
-        cv2.imwrite('orientated.png', dst)
+        if log:
+            cv2.imwrite('orientated.png', dst)
         # cv2.imwrite('test.png',dst)
         img_str = cv2.imencode('.jpg', dst)[1].tostring()
         return img_str
@@ -61,7 +68,7 @@ def orientation(imagebytes):
         return None
 
 
-def extract(pdf_bytes, verbose = True, threshold = 128, delta = 10, log = False):
+def extract(pdf_bytes, verbose = True, threshold = 110, delta = 10, log = True):
     ''' Usage:
             Input: bytes string read from image
             Ouput: license information JSON string
@@ -77,35 +84,68 @@ def extract(pdf_bytes, verbose = True, threshold = 128, delta = 10, log = False)
     #left,top,width,height,mode,language,length
     dataform = {
             # 'VIN': (318, 283, 238, 28, 7, 0, 17)
-            'VIN': (304, 283, 280, 32, 7, 0, 17)
+            # 'VIN': (304, 283, 280, 32, 7, 0, 17)
+            'VIN': (300, 283, 280, 28, 7, 0, 17)
             }
+    idform = {
+            # 'name': (240, 120, 240, 80, 7, 1, -1),
+            # 'sexuality': (240, 220, 160, 80, 7, 1, 1),
+            # 'race': (530, 220, 200, 80, 7, 1, -1),
+            # 'year': (240, 320, 160, 80, 7, 0, 4),
+            # 'month': (460, 320, 70, 80, 7, 0, -1),
+            # 'day': (600, 320, 70, 80, 7, 0, -1),
+            # 'address': (240, 440, 340, 160, 7, 1, -1),
+            'id': (460, 700, 800, 100, 7, 0, 18)}
 
     lang=['mon','chi_sim']
 
     for keys in dataform:
         imgstr = orientation(pdf_bytes)
-        if imgstr == None:
+        img = cv2.imdecode(np.fromstring(imgstr, np.uint8), 0)
+        if img == None:
             print 'Illegal file format.'
             return None
-        img = Image.open(io.BytesIO(imgstr))
         left, top, width, height, mode, lcode, length = dataform[keys]
         pool = [''] * length
         if log:
             a = open('log.txt', 'w')
-        for x in xrange(left, left + delta, 2):
-            for y in xrange(top - delta * 4, top + delta * 2, 2):
-                tmp = img.crop((x, y, x + width, y + height)).convert('L')
-                tmp = tmp.point(table, '1')
-                tmp.save('tmp.png')
-                attempt = image_to_string(tmp,
-                        lang = lang[lcode],
-                        config = '-psm %d lztd' % mode)
-                if len(attempt) == length:
-                    for i in xrange(length):
+        for y in xrange(top - delta * 4, top, 2):
+            cropimg = img[top:top + height, left:left + width]
+            th = cv2.adaptiveThreshold(cropimg, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,np.min(cropimg)/2)
+            if log:
+                cv2.imwrite('th.jpg', th)
+            th2 = th
+            contours, hierarchy = cv2.findContours(th2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            bw = np.zeros(th.shape, dtype = np.uint8)
+            new = []
+            for i in xrange(len(contours)):
+                if cv2.contourArea(contours[i]) > 40 or (np.squeeze(contours[i][0])[0] > 0.1 * bw.shape[1] and np.squeeze(contours[i][0])[0] < 0.9 * bw.shape[1]): 
+                    new.append(contours[i])
+            cv2.drawContours(bw, new, -1, (255,255,255), -1)
+            bw[0,:] += 255
+            bw[-1,:] += 255
+            bw[:,-1] += 255
+            bw[:,0] += 255
+            if log:
+                cv2.imwrite('coned.jpg', bw)
+
+            bw_str = cv2.imencode('.jpg', bw)[1].tostring()
+            tmp = Image.open(io.BytesIO(bw_str))
+            attempt = image_to_string(tmp,
+                    lang = lang[lcode],
+                    config = '-psm %d lztd' % mode)
+            if len(attempt) == length or trim(attempt, length):
+                if log:
+                    a.write(attempt + '\n')
+                if len(attempt) != length:
+                    attempt = trim(attempt, length)
+                print attempt
+                for i in xrange(length):
+                    if attempt[i] != ' ':
                         pool[i] += attempt[i]
-                        if log:
-                            a.write(attempt + '\n')
         if log:
+            a.write(str(pool))
             a.close()
 
         try:
@@ -114,8 +154,7 @@ def extract(pdf_bytes, verbose = True, threshold = 128, delta = 10, log = False)
             result = ''
         resultdict[keys]=result
         print result
-    # return json.dumps(resultdict)
-    return result
+    return resultdict
 
 # if __name__=='__main__':
 #     with open('image/samples/19188.jpg', 'rb') as f:
