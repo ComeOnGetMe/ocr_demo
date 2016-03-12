@@ -1,5 +1,6 @@
 (function () {
     var video = document.querySelector('video');
+    var border = document.getElementById('red-border');
 
     var pictureWidth = 640;
     var pictureHeight = 360;
@@ -114,6 +115,7 @@
     }
 
     function step1() {
+
         checkRequirements()
             .then(searchForRearCamera)
             .then(setupVideo)
@@ -126,6 +128,7 @@
             .fail(function (error) {
                 showError(error);
             });
+
     }
 
     function step2() {
@@ -174,6 +177,9 @@
     function step3() {
         var canvas = document.querySelector('#step3 canvas');
         var step2Image = document.querySelector('#step2 img');
+        var img = document.querySelector('#step3 img');
+
+        $(img).attr('src', fxCanvas.toDataURL());
         //var cropData = $(step2Image).data().Jcrop.tellSelect();
 
         //var scale = step2Image.width / $(step2Image).width();
@@ -225,6 +231,8 @@
     //start step1 immediately
     step1();
     $('.help').popover();
+    //border.width = video.width;
+    //border.height = video.width;
 
     function changeStep(step) {
         if (step === 1) {
@@ -279,7 +287,14 @@
         step4();
         changeStep(4);
         var canvas = document.querySelector('#step3 canvas');
-        $('#submit-image').val(canvas.toDataURL('image/png'));
+        //var imgstr = canvas.toDataURL('image/png');
+        var img = document.querySelector('#step3 img');
+
+        var imgstr = img.src;
+        //if (imgstr == null) {
+        //    imgstr = img.src;
+        //}
+        $('#submit-image').val(imgstr);
         $('#submit-form').submit();
     });
 
